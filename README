@@ -1,0 +1,21 @@
+This bot is used for helping with games Blood on the Clocktower over Discord by managing the voting system.
+
+Here are the various commands:
+
+/setup - A basic setup command you should use when adding the bot to a new server. After using it you can forget it exists.
+
+/open and /close - Open or close game signups.
+
+/join and /leave - Use to join or leave an open game.
+
+/add, /edit and /remove - Used by whoever is running the game to manually add, edit and remove players. This allows them to choose custom display names for the game, as well as changing a player's emoji or poisition.
+
+/list - Gives a list of every player currently in the game, in order.
+
+/togglevote - Toggle a player's ability to vote (for example, if they used their vote token while dead).
+
+/clear - Gives everyone's ability to vote back. Used for starting a new game with the same set of players.
+
+/reset - Removes all players from the game. Used for starting a new game with a different set of players.
+
+/vote - Starts the vote. You must specify a starting player. Voting is explained in the voting message for players' convenience. It is reccomended to do a test vote before starting a session with new players, as it is time-dependent.
