@@ -1,4 +1,4 @@
-//  Code for a Discord bot used to help run Blood on the Clocktower
+//	Code for a Discord bot used to help run Blood on the Clocktower
 
 const { Client, GatewayIntentBits, Partials, Collection, Events } = require('discord.js');
 const { token } = require('./config.json');
@@ -6,11 +6,11 @@ const fs = require('fs');
 const path = require('node:path');
 
 const client = new Client({
-    intents: [
-    GatewayIntentBits.Guilds,
+		intents: [
+		GatewayIntentBits.Guilds,
 	GatewayIntentBits.GuildMessages
 	// GatewayIntentBits.MessageContent
-    ]
+		]
 });
 
 client.commands = new Collection();
@@ -34,8 +34,8 @@ for (const folder of commandFolders) {
 }
 
 client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-    
+		if (!interaction.isChatInputCommand()) return;
+		
 	const command = interaction.client.commands.get(interaction.commandName);
 
 	if (!command) {
@@ -57,29 +57,29 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // Save the given data in the given server's location file as a JSON object
 function writeJSON(data, location) {
-    write(JSON.stringify(data), location + '.json')
+		write(JSON.stringify(data), location + '.json')
 }
 
 // Save the given data in the given server's location file
 function write(data, location) {
-    fs.writeFile('./data/' + location, data, {flag: 'w+'}, err => {
-        if (err) {
-          console.error(err);
-        }
-    });
+		fs.writeFile('./data/' + location, data, {flag: 'w+'}, err => {
+				if (err) {
+					console.error(err);
+				}
+		});
 }
 
 // Save a text output in output.txt
 function output(out) {
-    fs.writeFile('./output.txt', out, {flag: 'w+'}, err => {
-        if (err) {
-          console.error(err);
-        }
-    });
+		fs.writeFile('./output.txt', out, {flag: 'w+'}, err => {
+				if (err) {
+					console.error(err);
+				}
+		});
 }
 
 client.once('ready', () => {
-    console.log('restarted');
+		console.log('restarted');
 })
 
 client.login(token);
