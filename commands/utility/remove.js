@@ -1,5 +1,5 @@
 const {SlashCommandBuilder} = require('discord.js');
-const signups = require('../../modules/players');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,12 +12,11 @@ module.exports = {
 				.setRequired(true)),
 	async execute(interaction) {
 		try {
-			let user = interaction.options.getUser('player');
-			await signups.remove(
-				user,
-				interaction.guildId,
+			let { user, nicknameError } = await playersModule.remove(
+				interaction.options.getUser('player'),
+				interaction.guild,
 			)
-			await interaction.reply('**' + user.globalName + '** removed from game');
+			await interaction.reply('**' + user.globalName + '** removed from game' + nicknameError);
 		} catch (e) {
 			await interaction.reply(e);
 		}

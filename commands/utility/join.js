@@ -1,5 +1,5 @@
 const {SlashCommandBuilder} = require('discord.js');
-const signups = require('../../modules/players');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -24,13 +24,13 @@ module.exports = {
 		}
 		
 		try {
-			let { name, emoji } = await signups.add(
+			let { name, emoji, nicknameError, position } = await playersModule.add(
 				interaction.user,
 				interaction.options.getString('emoji'),
-				interaction.guildId,
+				interaction.guild,
 				interaction.options.getString('name'),
 			);
-			await interaction.reply('**' + name + '** ' + emoji + ' joined the game!');
+			await interaction.reply('**' + name + '** ' + emoji + ' joined the game (#' + (position + 1) + ')!' + (nicknameError || ""));
 		} catch (e) {
 			await interaction.reply(`${e}`);
 		}

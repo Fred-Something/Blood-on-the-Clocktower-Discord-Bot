@@ -13,10 +13,12 @@ module.exports = {
 			var players = game["players"]
 
 			var out = ""
-
+			
+			let i = 1;
 			for (const player in players) {
 				const data = require('../../' + server + '/' + players[player] + '.json');
-				out += data['emoji'] + ' **' + data['name'] + '**\n'
+				out += `${i}. ${data['emoji']} **${data['name']}**\n`;
+				i += 1;
 			}
 
 			await interaction.reply('Here\'s the current list of players:\n' + out);

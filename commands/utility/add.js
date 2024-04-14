@@ -1,5 +1,5 @@
 const {SlashCommandBuilder} = require('discord.js');
-const signups = require('../../modules/players');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -23,17 +23,17 @@ module.exports = {
 				.setDescription('The position they\'ll be added in (default, anticlockwise to first player)')
 				.setRequired(false)),
 	async execute(interaction) {
-		let position = interaction.options.getInteger('position');
+		let pos = interaction.options.getInteger('position');
 
 		try {
-			let { name, emoji } = await signups.add(
+			let { name, emoji, nicknameError, position } = await playersModule.add(
 				interaction.options.getUser('player'),
 				interaction.options.getString('emoji'),
-				interaction.guildId,
+				interaction.guild,
 				interaction.options.getString('name'),
-				typeof position == "number" ? (position - 1) : null,
+				typeof pos == "number" ? (pos - 1) : null,
 			);
-			await interaction.reply('**' + name + '** ' + emoji + ' joined the game!');
+			await interaction.reply('**' + name + '** ' + emoji + ' joined the game (#' + (position + 1) + ')!' + (nicknameError || ""));
 		} catch (e) {
 			await interaction.reply(`${e}`);
 		}
