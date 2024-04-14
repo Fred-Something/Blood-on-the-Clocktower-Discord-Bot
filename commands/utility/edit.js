@@ -1,5 +1,6 @@
 const {SlashCommandBuilder} = require('discord.js');
 const fs = require('fs');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 		data: new SlashCommandBuilder()
@@ -65,22 +66,26 @@ module.exports = {
 			const name = interaction.options.getString('name');
 			if (name != null) player['name'] = name;			
 
-			const position = interaction.options.getInteger('position');
+			let position = interaction.options.getInteger('position');
 
 			if (position != null) {
-				if (position <= 0 || position > players.length + 1) {
+				position -= 1;
+
+				if (position < 0 || position > players.length) {
 					await interaction.reply('Invalid position! There are ' + players.length + 'people playing, position must be between 1 and ' + (players.length + 1));
 					return;
 				}
 	
 				players.splice(players.indexOf(id), 1);
-				players.splice(position - 1, 0, id);
+				players.splice(position, 0, id);
 				game['players'] = players
 				fs.writeFileSync(server + '/game.json', JSON.stringify(game), {flag: 'w+'}, err => {
 					if (err) {
 						console.error(err);
 					}
 				});
+
+				playersModule.updateNicknamesFrom(interaction.guild, position, game);
 			}
 
 			fs.writeFileSync(server + '/' + id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
