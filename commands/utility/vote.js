@@ -9,8 +9,12 @@ module.exports = {
 			.setDefaultMemberPermissions(0)
 			.addUserOption(option =>
 				option.setName('player')
-					.setDescription('Player the vote will start at')
-					.setRequired(true)),
+					.setDescription('Player who was nominated, aka player who will vote last')
+					.setRequired(true))
+			.addStringOption(option =>
+				option.setName('customname')
+				.setDescription('(Optional) The name of the nominated person, if needs to be customized')
+					.setRequired(false)),
 		async execute(interaction) {
 
 			const server = './data/' + interaction.guildId;
@@ -18,16 +22,16 @@ module.exports = {
 			const game = require('../../' + server + '/game.json');
 			const players = game["players"]
 
-			const start = interaction.options.getUser('player');
+			const nominee = interaction.options.getUser('player');
 
-			if (!players.includes(start.id)) {
+			if (!players.includes(nominee.id)) {
 				await interaction.reply('Player not in game!');
 				return;
 			}
 
 			var voters = new Array;
 			var voteids = new Array;
-			const offset = players.indexOf(start.id);
+			const offset = players.indexOf(nominee.id) + 1;
 
 			let aliveCount = 0;
 			for (const player in players) {
@@ -49,14 +53,9 @@ module.exports = {
 			// console.log(voteids);
 
 			const required = Math.ceil(aliveCount / 2);
-			let text = `VOTING IS NOW OPEN\n**${required}** votes needed to execute\n\nThe voting order will be as follows:\n`;
+			const nomineeName = interaction.options.getString('customname') ?? nominee.globalName;
+			let text = `## VOTING IS NOW OPEN\n**${required}** votes needed to execute **${nomineeName}**\n\n`;
 
-			for (const voter in voters) {
-				if (voter > 0) text += ' -> ';
-				text += voters[voter]['emoji'];
-			}
-
-			text += '\n\n'
 			text += voters[0]['emoji'] + ' **' + voters[0]['name'] + '**\'s vote will be recorded in 8 seconds\n'
 			
 			const vote = new ButtonBuilder()
@@ -110,7 +109,7 @@ module.exports = {
 				text += voters[count]['emoji'] + ' **' + voters[count]['name'] + '** has '
 					+ (votes[count] ? '**VOTED\n**' : '**ABSTAINED\n**')
 				// text += (count >= votes.length - 1 ? '\n' : ' (' + voters[count + 1]['emoji'] + ' **' + voters[count + 1]['name'] + '** is next)\n');
-				if (!voters[count].alive) {
+				if (votes[count] && !voters[count].alive) {
 					deadVoters.push(voters[count]);
 				}
 				count++;
@@ -126,7 +125,7 @@ module.exports = {
 
 			const num = votes.filter(Boolean).length
 			await interaction.editReply({
-				content : text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '.' : 's.') + deadVotersText,
+				content : text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '' : 's') + ', which is ' + (num < required ? '**not** enough' : '**enough**') + '.' + deadVotersText,
 				components: []
 			});
 
