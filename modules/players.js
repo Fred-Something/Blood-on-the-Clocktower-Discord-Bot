@@ -91,7 +91,7 @@ module.exports = {
             }
         });
 
-        const init = {"name":name,"canvote":true,"emoji":emoji}
+        const init = {"name":name,"canvote":true,"alive":true,"emoji":emoji};
 
         fs.writeFileSync(server + '/' + id + '.json', JSON.stringify(init), {flag: 'w+'}, err => {
             if (err) {
@@ -104,7 +104,7 @@ module.exports = {
 
         let nicknameError = "";
         try {
-            await module.exports.updateNickname(player.id, guild, position);
+            await module.exports.updateNickname(player.id, guild, game);
         } catch {
             nicknameError = " (could not update nickname)";
         }
@@ -127,7 +127,7 @@ module.exports = {
         let promises = [];
 
         for (let i = position; i < players.length; i++) {
-            promises.push(module.exports.updateNickname(players[i], guild, i).catch(function(e) {
+            promises.push(module.exports.updateNickname(players[i], guild, game).catch(function(e) {
                 console.error(e);
             }));
         }
@@ -135,14 +135,29 @@ module.exports = {
         await Promise.allSettled(promises);
     },
 
-    async updateNickname(id, guild, position) {
+    async updateNickname(id, guild, game=null) {
+        if (game === null) {
+            const server = './data/' + guild.id;
+            game = require('../' + server + '/game.json');
+        }
         try {
+            const number = (game.players.indexOf(id) + 1).toString().padStart(2, '0');
+            let nickname = `${number}. `;
+
+            const playerData = require('../data/' + guild.id + '/' + id + '.json');
+            if (playerData.canvote) {
+                if (!playerData.alive) nickname += "💀 ";
+            } else {
+                if (!playerData.alive) nickname += "🦴 ";
+                else nickname += "❗ ";
+            }
+
             const member = await guild.members.fetch(id);
-            const number = (position + 1).toString().padStart(2, '0');
-            const nickname = member.displayName.replace(PLAYER_NICKNAME_REGEX, "");
-            await member.setNickname(`${number}. ${nickname}`);
+            nickname += member.displayName.replace(PLAYER_NICKNAME_REGEX, "");
+
+            await member.setNickname(nickname);
         } catch (e) {
-            throw `Could not change nickname of player #${position + 1} ( <@${id}> )`;
+            throw `Could not change nickname of user <@${id}> (${e})`;
         }
     },
 

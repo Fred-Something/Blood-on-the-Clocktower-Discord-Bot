@@ -1,4 +1,6 @@
 const {SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} = require('discord.js');
+const fs = require('fs');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 		data: new SlashCommandBuilder()
@@ -27,11 +29,18 @@ module.exports = {
 			var voteids = new Array;
 			const offset = players.indexOf(start.id);
 
+			let aliveCount = 0;
 			for (const player in players) {
 				const cur = (Number(player) + Number(offset)) % players.length;
 				const p = require('../../' + server + '/' + players[cur] + '.json');
-				if (!p['canvote']) continue;
-				const voteinfo = {name:p['name'],emoji:p['emoji']}
+				if (p.alive) aliveCount += 1;
+				if (!p.canvote) continue;
+				const voteinfo = {
+					name: p.name,
+					emoji: p.emoji,
+					alive: p.alive,
+					id: players[cur],
+				};
 				voters.splice(voters.length, 0, voteinfo);
 				voteids.splice(voters.length, 0, players[cur]);
 			}
@@ -39,7 +48,8 @@ module.exports = {
 			// console.log(voters);
 			// console.log(voteids);
 
-			var text = "VOTING IS NOW OPEN\n\nThe voting order will be as follows:\n";
+			const required = Math.ceil(aliveCount / 2);
+			let text = `VOTING IS NOW OPEN\n**${required}** votes needed to execute\n\nThe voting order will be as follows:\n`;
 
 			for (const voter in voters) {
 				if (voter > 0) text += ' -> ';
@@ -94,20 +104,42 @@ module.exports = {
 				interaction.editReply(text + votescreen(count, voters, votes));
 			}
 
+			let deadVoters = [];
 			for (const voter in voters) {
 				await sleep(1050);
 				text += voters[count]['emoji'] + ' **' + voters[count]['name'] + '** has '
 					+ (votes[count] ? '**VOTED\n**' : '**ABSTAINED\n**')
 				// text += (count >= votes.length - 1 ? '\n' : ' (' + voters[count + 1]['emoji'] + ' **' + voters[count + 1]['name'] + '** is next)\n');
+				if (!voters[count].alive) {
+					deadVoters.push(voters[count]);
+				}
 				count++;
 				await interaction.editReply(text + votescreen(count, voters, votes));
 			}
 
+			let deadVotersText = "";
+			if (deadVoters.length > 0) {
+				deadVotersText = "\nThe following dead players have spent their vote: ";
+				let deadVoterNames = deadVoters.map(voter => voter.name);
+				deadVotersText += '**' + deadVoterNames.join('**, ') + '**';
+			}
+
 			const num = votes.filter(Boolean).length
 			await interaction.editReply({
-				content : text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '.' : 's.'),
+				content : text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '.' : 's.') + deadVotersText,
 				components: []
 			});
+
+			for (let voter of deadVoters) {
+				var player = require('../../' + server + '/' + voter.id + '.json');
+				player['canvote'] = false;
+				fs.writeFileSync(server + '/' + voter.id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
+					if (err) {
+						console.error(err);
+					}
+				});
+				await playersModule.updateNickname(voter.id, interaction.guild, game);
+			}
 		}
 }
 

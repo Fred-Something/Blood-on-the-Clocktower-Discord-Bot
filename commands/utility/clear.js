@@ -1,10 +1,11 @@
 const {SlashCommandBuilder} = require('discord.js');
 const fs = require('fs');
+const playersModule = require('../../modules/players');
 
 module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("clear")
-			.setDescription("Give all players their votes back")
+			.setDescription("Make all players alive and able to vote again")
 			.setDefaultMemberPermissions(0),
 		async execute(interaction) {
 
@@ -17,6 +18,7 @@ module.exports = {
 				var player = require('../../' + server + '/' + players[p] + '.json');
 
 				player['canvote'] = true;
+				player['alive'] = true;
 
 				fs.writeFileSync(server + '/' + players[p] + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
 					if (err) {
@@ -25,6 +27,7 @@ module.exports = {
 				});
 			}
 
-			await interaction.reply('Votes restored!');
+			await interaction.reply('Cleared all players\' statuses!');
+			await playersModule.updateNicknamesFrom(interaction.guild, 0, game);
 		}
 }

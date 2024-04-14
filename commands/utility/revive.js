@@ -4,17 +4,13 @@ const playersModule = require('../../modules/players');
 
 module.exports = {
 		data: new SlashCommandBuilder()
-			.setName("togglevote")
-			.setDescription("Toggles if a player is able to vote (for example, if they used their dead vote)")
+			.setName("revive")
+			.setDescription("Mark a dead player as alive.")
 			.setDefaultMemberPermissions(0)
 			.addUserOption(option =>
 				option.setName('player')
-					.setDescription('Player to toggle the vote of')
-					.setRequired(true))
-			.addBooleanOption(option =>
-				option.setName('on')
-					.setDescription('Are they allowed to vote? Defaults to opposite of current voting ability')
-					.setRequired(false)),
+					.setDescription('Player to mark as alive')
+					.setRequired(true)),
 		async execute(interaction) {
 
 			const id = interaction.options.getUser('player').id;
@@ -31,9 +27,12 @@ module.exports = {
 
 			var player = require('../../' + server + '/' + id + '.json');
 
-			var vote = player['canvote'];
-			vote = interaction.options.getBoolean('on') ?? !vote;
-			player['canvote'] = vote;
+			if (player['alive']) {
+				await interaction.reply('Player is already alive!');
+				return;
+			}
+			player['canvote'] = true;
+			player['alive'] = true;
 
 			fs.writeFileSync(server + '/' + id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
 				if (err) {
@@ -41,7 +40,7 @@ module.exports = {
 				}
 			});
 
-			await interaction.reply('Voting set to ' + vote);
+			await interaction.reply('Player is now alive');
 			await playersModule.updateNickname(id, interaction.guild, game);
 		}
 }
