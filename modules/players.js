@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const PLAYER_ROLE_ID = "1229094600338182247"; // 1229093893824581663 // TODO
+const PLAYER_ROLE_ID = "1229093893824581663"; // TODO
 const PLAYER_NICKNAME_REGEX = /^[0-9][0-9]?\. \p{Emoji}? ?/gu;
 
 module.exports = {
@@ -170,7 +170,7 @@ module.exports = {
                 await member.setNickname(nickname);
             }
         } catch (e) {
-            throw `Could not change nickname of user <@${id}>`;
+            throw `Could not change nickname of user <@${id}> (${e})`;
         }
     },
 }
