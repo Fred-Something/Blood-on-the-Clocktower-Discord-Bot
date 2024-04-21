@@ -12,12 +12,21 @@ module.exports = {
 			var game = require('../../' + server + '/game.json');
 			var players = game["players"]
 
-			var out = ""
+			let out = ""
 			
 			let i = 1;
 			for (const player in players) {
 				const data = require('../../' + server + '/' + players[player] + '.json');
-				out += `${i}. ${data['emoji']} **${data['name']}**\n`;
+				out += `${i}.`;
+				out += ' ' + data.emoji;
+				if (data.canvote) {
+					if (!data.alive) out += " 💀";
+				} else {
+					if (!data.alive) out += " 🦴";
+					else out += " ❗";
+				}
+				out += ` **${data.name}**`;
+				out += '\n';
 				i += 1;
 			}
 

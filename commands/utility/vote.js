@@ -8,12 +8,20 @@ module.exports = {
 			.setDescription("Starts a vote")
 			.setDefaultMemberPermissions(0)
 			.addUserOption(option =>
-				option.setName('player')
+				option.setName('nominee')
 					.setDescription('Player who was nominated, aka player who will vote last')
 					.setRequired(true))
-			.addStringOption(option =>
-				option.setName('customname')
-				.setDescription('(Optional) The name of the nominated person, if needs to be customized')
+			.addBooleanOption(option =>
+				option.setName('exile')
+				.setDescription('Whether this is a vote to exile a traveler, so dead players are counted too')
+					.setRequired(false))
+			.addUserOption(option =>
+				option.setName('voudon')
+				.setDescription('Specify if a Voudon is in play, and who they are, so only they & the dead can vote')
+					.setRequired(false))
+			.addBooleanOption(option =>
+				option.setName('atheist')
+				.setDescription('Whether this is a vote for the storyteller instead of the specified nominee')
 					.setRequired(false)),
 		async execute(interaction) {
 
@@ -22,12 +30,16 @@ module.exports = {
 			const game = require('../../' + server + '/game.json');
 			const players = game["players"]
 
-			const nominee = interaction.options.getUser('player');
-
+			const nominee = interaction.options.getUser('nominee');
+			
 			if (!players.includes(nominee.id)) {
 				await interaction.reply('Player not in game!');
 				return;
 			}
+
+			const optionAtheist = interaction.options.getBoolean('atheist');
+			const optionExile = interaction.options.getBoolean('exile');
+			const voudon = optionExile ? null : interaction.options.getUser('voudon');
 
 			var voters = new Array;
 			var voteids = new Array;
@@ -37,8 +49,19 @@ module.exports = {
 			for (const player in players) {
 				const cur = (Number(player) + Number(offset)) % players.length;
 				const p = require('../../' + server + '/' + players[cur] + '.json');
-				if (p.alive) aliveCount += 1;
-				if (!p.canvote) continue;
+				
+				if (voudon) {
+					if (p.alive && players[cur] !== voudon.id) continue;
+					aliveCount += 1;
+				} else {
+					if (optionExile) {
+						aliveCount += 1;
+					} else {
+						if (p.alive) aliveCount += 1;
+						if (!p.canvote) continue;
+					}
+				}
+
 				const voteinfo = {
 					name: p.name,
 					emoji: p.emoji,
@@ -53,8 +76,10 @@ module.exports = {
 			// console.log(voteids);
 
 			const required = Math.ceil(aliveCount / 2);
-			const nomineeName = interaction.options.getString('customname') ?? nominee.globalName;
-			let text = `## VOTING IS NOW OPEN\n**${required}** votes needed to execute **${nomineeName}**\n\n`;
+			const nomineeName = optionAtheist ? interaction.user.globalName : nominee.globalName;
+			let text = `## VOTING IS NOW OPEN\n**${required}** votes needed to ${optionExile ? "exile" : "execute"} **${nomineeName}**\n`;
+			if (voudon) text += `Only dead players and the Voudon can vote.\n`;
+			text += '\n';
 
 			text += voters[0]['emoji'] + ' **' + voters[0]['name'] + '**\'s vote will be recorded in 8 seconds\n'
 			
@@ -79,7 +104,7 @@ module.exports = {
 				components: [row],
 			});
 
-			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 10_000 });
+			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 50_000 });
 			collector.on('collect', i => {
 				if (voteids.includes(i.user.id)) {
 					if (voteids.indexOf(i.user.id) >= count) {
@@ -117,7 +142,7 @@ module.exports = {
 			}
 
 			let deadVotersText = "";
-			if (deadVoters.length > 0) {
+			if (!optionExile && !voudon && deadVoters.length > 0) {
 				deadVotersText = "\nThe following dead players have spent their vote: ";
 				let deadVoterNames = deadVoters.map(voter => voter.name);
 				deadVotersText += '**' + deadVoterNames.join('**, ') + '**';
@@ -129,15 +154,17 @@ module.exports = {
 				components: []
 			});
 
-			for (let voter of deadVoters) {
-				var player = require('../../' + server + '/' + voter.id + '.json');
-				player['canvote'] = false;
-				fs.writeFileSync(server + '/' + voter.id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
-					if (err) {
-						console.error(err);
-					}
-				});
-				await playersModule.updateNickname(voter.id, interaction.guild, game);
+			if (!optionExile && !voudon) {
+				for (let voter of deadVoters) {
+					var player = require('../../' + server + '/' + voter.id + '.json');
+					player['canvote'] = false;
+					fs.writeFileSync(server + '/' + voter.id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
+						if (err) {
+							console.error(err);
+						}
+					});
+					await playersModule.updateNickname(voter.id, interaction.guild, game);
+				}
 			}
 		}
 }
