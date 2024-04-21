@@ -79,7 +79,7 @@ module.exports = {
 				components: [row],
 			});
 
-			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 10_000 });
+			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 50_000 });
 			collector.on('collect', i => {
 				if (voteids.includes(i.user.id)) {
 					if (voteids.indexOf(i.user.id) >= count) {
