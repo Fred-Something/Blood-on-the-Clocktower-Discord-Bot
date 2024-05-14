@@ -79,7 +79,7 @@ module.exports = {
 				}
 			}
 
-			const endtime = Date.now() + 6100;
+			const endtime = Date.now() + 60100;
 
 			let text = `## ${num > 2 ? 'THE BOOMDANDY WAS EXECUTED' : 'THE FIDDLING CONTEST HAS BEGUN'}\n`;
 			text += `Either `
@@ -93,7 +93,8 @@ module.exports = {
 			for (let i = 0; i < num; i++) {
 				buttons[i] = new ButtonBuilder()
 					.setCustomId(`p${i + 1}`)
-					.setLabel(`${nomdata[i].emoji} ${nomdata[i].name}`)
+					.setEmoji(`${nomdata[i].emoji}`)
+					.setLabel(`${nomdata[i].name}`)
 					.setStyle([ButtonStyle.Danger, ButtonStyle.Success, ButtonStyle.Primary][i % 3]);
 			}
 
