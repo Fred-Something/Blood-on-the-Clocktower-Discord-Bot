@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const PLAYER_ROLE_ID = "1229093893824581663"; // TODO
-const PLAYER_NICKNAME_REGEX = /^[0-9][0-9]?\. \p{Emoji}? ?/gu;
+const PLAYER_NICKNAME_REGEX = /^[0-9][0-9]?\. \p{Emoji}* ?/gu;
 
 module.exports = {
     async remove(user, guild) {
@@ -141,16 +141,23 @@ module.exports = {
             game = require('../' + server + '/game.json');
         }
         try {
+            const playerData = require('../data/' + guild.id + '/' + id + '.json');
+
             const number = (game.players.indexOf(id) + 1).toString().padStart(2, '0');
             let nickname = `${number}. `;
-
-            const playerData = require('../data/' + guild.id + '/' + id + '.json');
+            
+            const emojis = [];
             if (playerData.canvote) {
-                if (!playerData.alive) nickname += "💀 ";
+                if (!playerData.alive) emojis.push("💀");
             } else {
-                if (!playerData.alive) nickname += "🦴 ";
-                else nickname += "❗ ";
+                if (!playerData.alive) emojis.push("🦴");
+                else emojis.push("❗");
             }
+            if (playerData.handRaised) {
+                emojis.push("🖐️");
+            }
+            nickname += emojis.join('');
+            nickname += " ";
 
             const member = await guild.members.fetch(id);
             nickname += member.displayName.replace(PLAYER_NICKNAME_REGEX, "");
