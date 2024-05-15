@@ -1,11 +1,11 @@
-const {SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("setup")
 			.setDescription("Use on a new server, the bot performs necessary setup")
-			.setDefaultMemberPermissions(0),
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers),
 		async execute(interaction) {
 			const server = interaction.guildId;
 
