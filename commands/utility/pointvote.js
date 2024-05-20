@@ -1,4 +1,4 @@
-const {SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const fs = require('fs');
 const playersModule = require('../../modules/players');
 
@@ -6,7 +6,7 @@ module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("pointvote")
 			.setDescription("Starts a point vote (for boomdandy or fiddler)")
-			.setDefaultMemberPermissions(0)
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers)
 			.addUserOption(option =>
 				option.setName('player1')
 					.setDescription('The first player in voting')
@@ -79,7 +79,7 @@ module.exports = {
 				}
 			}
 
-			const endtime = Date.now() + 6100;
+			const endtime = Date.now() + 60100;
 
 			let text = `## ${num > 2 ? 'THE BOOMDANDY WAS EXECUTED' : 'THE FIDDLING CONTEST HAS BEGUN'}\n`;
 			text += `Either `
@@ -93,7 +93,8 @@ module.exports = {
 			for (let i = 0; i < num; i++) {
 				buttons[i] = new ButtonBuilder()
 					.setCustomId(`p${i + 1}`)
-					.setLabel(`${nomdata[i].emoji} ${nomdata[i].name}`)
+					.setEmoji(`${nomdata[i].emoji}`)
+					.setLabel(`${nomdata[i].name}`)
 					.setStyle([ButtonStyle.Danger, ButtonStyle.Success, ButtonStyle.Primary][i % 3]);
 			}
 

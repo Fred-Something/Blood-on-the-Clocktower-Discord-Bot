@@ -1,4 +1,4 @@
-const {SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const playersModule = require('../../modules/players');
 
@@ -6,7 +6,7 @@ module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("revive")
 			.setDescription("Mark a dead player as alive.")
-			.setDefaultMemberPermissions(0)
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers)
 			.addUserOption(option =>
 				option.setName('player')
 					.setDescription('Player to mark as alive')

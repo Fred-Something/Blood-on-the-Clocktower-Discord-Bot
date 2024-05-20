@@ -1,11 +1,11 @@
-const {SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const playersModule = require('../../modules/players');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("remove")
 		.setDescription("Removes a player from the game")
-		.setDefaultMemberPermissions(0)
+		.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers)
 		.addUserOption(option =>
 			option.setName('player')
 				.setDescription('Player you want to remove')

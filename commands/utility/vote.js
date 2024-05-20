@@ -1,4 +1,4 @@
-const {SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const fs = require('fs');
 const playersModule = require('../../modules/players');
 
@@ -6,7 +6,7 @@ module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("vote")
 			.setDescription("Starts a vote")
-			.setDefaultMemberPermissions(0)
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers)
 			.addUserOption(option =>
 				option.setName('nominee')
 					.setDescription('Player who was nominated, aka player who will vote last')

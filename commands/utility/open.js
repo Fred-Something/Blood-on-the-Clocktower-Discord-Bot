@@ -1,11 +1,11 @@
-const {SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("open")
 			.setDescription("Open game signups, allowing people to join or leave")
-			.setDefaultMemberPermissions(0),
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers),
 		async execute(interaction) {
 			const server = interaction.guildId;
 

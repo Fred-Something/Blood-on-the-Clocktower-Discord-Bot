@@ -1,11 +1,11 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const nominationGif = require('../../modules/nominationGif');
 
 module.exports = {
 		data: new SlashCommandBuilder()
 			.setName("nominate")
 			.setDescription("Generate an animation for a player nominating another player")
-			.setDefaultMemberPermissions(0)
+			.setDefaultMemberPermissions(PermissionFlagsBits.MoveMembers)
 			.addUserOption(option =>
 				option.setName('accuser')
 					.setDescription('Player that called the nomination')
