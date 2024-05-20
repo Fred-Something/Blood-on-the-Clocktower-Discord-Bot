@@ -35,6 +35,8 @@ function getAvatarCenter(currentFrame, flipped) {
 }
 
 module.exports = {
+    GIF_DURATION: 3600,
+
     async generateBuffer(user1, user2) {
         const users = [user1, user2];
 
