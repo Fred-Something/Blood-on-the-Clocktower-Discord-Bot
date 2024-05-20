@@ -41,7 +41,7 @@ module.exports = {
             const voteinfo = {
                 name: p.name,
                 emoji: p.emoji,
-                ghost: !(p.alive && !options.exile && !voudon),
+                ghost: !p.alive && !options.exile && !voudon,
                 id: players[cur],
             };
             voters.splice(voters.length, 0, voteinfo);
