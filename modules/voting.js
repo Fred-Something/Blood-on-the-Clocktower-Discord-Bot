@@ -41,7 +41,7 @@ module.exports = {
             const voteinfo = {
                 name: p.name,
                 emoji: p.emoji,
-                alive: p.alive,
+                ghost: !(p.alive && !options.exile && !voudon),
                 id: players[cur],
             };
             voters.splice(voters.length, 0, voteinfo);
@@ -146,7 +146,7 @@ module.exports = {
             await sleep(1050);
             text += voters[count]['emoji'] + ' **' + voters[count]['name'] + '** has '
                 + (votes[count] ? '**VOTED\n**' : '**ABSTAINED\n**')
-            if (votes[count] && !voters[count].alive) {
+            if (votes[count] && voters[count].ghost) {
                 deadVoters.push(voters[count]);
             }
             count++;
@@ -227,11 +227,11 @@ function votescreen(count, voters, votes) {
 	out += voters.map(v => v.emoji).join('') + '\n';
 	for (let i = 0; i < count; i++) {
 		const emotes = votes[i] ? EMOTES.VOTE : EMOTES.ABSTAIN;
-		out += voters[i].alive ? emotes.ALIVE : emotes.DEAD;
+		out += voters[i].ghost ? emotes.DEAD : emotes.ALIVE;
 	}
 	for (let i = count; i < votes.length; i++) {
 		const emotes = votes[i] ? EMOTES.VOTE_PENDING : EMOTES.ABSTAIN_PENDING;
-		out += voters[i].alive ? emotes.ALIVE : emotes.DEAD;
+		out += voters[i].ghost ? emotes.DEAD : emotes.ALIVE;
 	}
 	return out;
 }
