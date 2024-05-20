@@ -157,7 +157,7 @@ module.exports = {
         if (!options.exile && !voudon && deadVoters.length > 0) {
             deadVotersText = "\nThe following dead players have spent their vote: ";
             let deadVoterNames = deadVoters.map(voter => voter.name);
-            deadVotersText += '**' + deadVoterNames.join('**, ') + '**';
+            deadVotersText += '**' + deadVoterNames.join('**, **') + '**';
         }
 
         const num = votes.filter(Boolean).length;
