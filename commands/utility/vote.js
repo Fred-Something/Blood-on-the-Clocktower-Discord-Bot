@@ -176,17 +176,53 @@ function sleep(ms) {
 }
 
 function votescreen(count, voters, votes) {
-	// console.log(votes.length - count - 1);
+	const EMOTES = {
+		ABSTAIN_PENDING: {
+			ALIVE: '🟦',
+			DEAD: '🔵',
+		},
+		ABSTAIN: {
+			ALIVE: '🟪',
+			DEAD: '🟣',
+		},
+		VOTE_PENDING: {
+			ALIVE: '🟧',
+			DEAD: '🟠',
+		},
+		VOTE: {
+			ALIVE: '🟥',
+			DEAD: '🔴',
+		},
+	}
+	// const EMOTES = {
+	// 	ABSTAIN_PENDING: {
+	// 		ALIVE: '<:abstain_pending:1241798891863674940>',
+	// 		DEAD: '<:abstain_pending_dead:1241798964026675262>',
+	// 	},
+	// 	ABSTAIN: {
+	// 		ALIVE: '<:abstain:1241798873287229522>',
+	// 		DEAD: '<:abstain_dead:1241798984276643910>',
+	// 	},
+	// 	VOTE_PENDING: {
+	// 		ALIVE: '<:vote_pending:1241798861337395210>',
+	// 		DEAD: '<:vote_pending_dead:1241798912369623211>',
+	// 	},
+	// 	VOTE: {
+	// 		ALIVE: '<:vote:1241798847077028020>',
+	// 		DEAD: '<:vote_dead:1241798952546861096>',
+	// 	},
+	// }
+
 	var out = '\n'
 	out += (count == votes.length ? '' : ('⬛'.repeat(count)) + '⬇' + ('⬛'.repeat(votes.length - count - 1)) + '\n');
 	out += voters.map(v => v.emoji).join('') + '\n';
 	for (let i = 0; i < count; i++) {
-		// out += votes[i] ? '<:vote:1228700232498413619>' : '<:abstain:1228700281047613502>';
-		out += votes[i] ? '🟥' : '🟪';
+		const emotes = votes[i] ? EMOTES.VOTE : EMOTES.ABSTAIN;
+		out += voters[i].alive ? emotes.ALIVE : emotes.DEAD;
 	}
 	for (let i = count; i < votes.length; i++) {
-		// out += votes[i] ? '<:vote_pending:1228700236269224007>' : '<:abstain_pending:1228700283429978193>';
-		out += votes[i] ? '🟧' : '🟦';
+		const emotes = votes[i] ? EMOTES.VOTE_PENDING : EMOTES.ABSTAIN_PENDING;
+		out += voters[i].alive ? emotes.ALIVE : emotes.DEAD;
 	}
 	return out;
 }
