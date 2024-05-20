@@ -8,7 +8,7 @@ module.exports = {
 
         const server = './data/' + guild.id;
 
-        const game = require('../' + server + '/game.json');
+        const game = JSON.parse(fs.readFileSync(server + '/game.json'));
         const players = game["players"]
         
         if (!players.includes(nominee.id)) {
@@ -24,7 +24,7 @@ module.exports = {
         let aliveCount = 0;
         for (const player in players) {
             const cur = (Number(player) + Number(offset)) % players.length;
-            const p = require('../' + server + '/' + players[cur] + '.json');
+            const p = JSON.parse(fs.readFileSync(server + '/' + players[cur] + '.json'));
             
             if (voudon) {
                 if (p.alive && players[cur] !== voudon.id) continue;
@@ -169,7 +169,7 @@ module.exports = {
 
         if (!options.exile && !voudon) {
             for (let voter of deadVoters) {
-                var player = require('../' + server + '/' + voter.id + '.json');
+                var player = JSON.parse(fs.readFileSync(server + '/' + voter.id + '.json'));
                 player['canvote'] = false;
                 fs.writeFileSync(server + '/' + voter.id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
                     if (err) {

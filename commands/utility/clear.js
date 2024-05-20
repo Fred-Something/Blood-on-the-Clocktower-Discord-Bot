@@ -11,11 +11,11 @@ module.exports = {
 
 			const server = './data/' + interaction.guildId;
 
-			var game = require('../../' + server + '/game.json');
+			var game = JSON.parse(fs.readFileSync(server + '/game.json'));
 			var players = game["players"]
 
 			for (const p in players) {
-				var player = require('../../' + server + '/' + players[p] + '.json');
+				var player = JSON.parse(fs.readFileSync(server + '/' + players[p] + '.json'));
 
 				player['canvote'] = true;
 				player['alive'] = true;

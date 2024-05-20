@@ -11,7 +11,7 @@ module.exports = {
 
 		const server = './data/' + interaction.guildId;
 
-		var game = require('../../' + server + '/game.json');
+		var game = JSON.parse(fs.readFileSync(server + '/game.json'));
 		var players = game["players"]
 
 		for (const player of players) {

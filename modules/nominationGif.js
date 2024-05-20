@@ -7,7 +7,7 @@ const GIF_WIDTH = 640;
 const CUTIN_HEIGHT = 84;
 
 function loadAvatarConfig() {
-    const avatarConfig = require('../avatars/avatars.json');
+    const avatarConfig = JSON.parse(fs.readFileSync('./avatars/avatars.json'));
     if (avatarConfig["default"] === undefined) throw "avatars.json does not contain 'default' key";
     return avatarConfig;
 }

@@ -21,7 +21,7 @@ module.exports = {
 
 			const server = './data/' + interaction.guildId;
 
-			var game = require('../../' + server + '/game.json');
+			var game = JSON.parse(fs.readFileSync(server + '/game.json'));
 			var players = game["players"]
 
 			if (!players.includes(id)) {
@@ -29,7 +29,7 @@ module.exports = {
 				return;
 			}
 
-			var player = require('../../' + server + '/' + id + '.json');
+			var player = JSON.parse(fs.readFileSync(server + '/' + id + '.json'));
 
 			var vote = player['canvote'];
 			vote = interaction.options.getBoolean('on') ?? !vote;

@@ -1,4 +1,5 @@
 const {SlashCommandBuilder} = require('discord.js');
+const fs = require('fs');
 const playersModule = require('../../modules/players');
 
 module.exports = {
@@ -16,7 +17,7 @@ module.exports = {
 	async execute(interaction) {
 
 		const server = './data/' + interaction.guildId;
-		const game = require('../../' + server + '/game.json');
+		const game = JSON.parse(fs.readFileSync(server + '/game.json'));
 
 		if (!game['open']) {
 			await interaction.reply('Game cannot be joined: Signups are not open.');

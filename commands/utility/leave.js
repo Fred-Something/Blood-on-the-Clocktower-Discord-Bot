@@ -1,4 +1,5 @@
 const {SlashCommandBuilder} = require('discord.js');
+const fs = require('fs');
 const playersModule = require('../../modules/players');
 
 module.exports = {
@@ -7,7 +8,7 @@ module.exports = {
 		.setDescription("Leave the game"),
 	async execute(interaction) {
 		const server = './data/' + interaction.guildId;
-		const game = require('../../' + server + '/game.json');
+		const game = JSON.parse(fs.readFileSync(server + '/game.json'));
 
 		if (!game['open']) {
 			await interaction.reply('Cannot leave ongoing game, notify the storyteller if you need to leave early.');

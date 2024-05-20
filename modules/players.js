@@ -7,7 +7,7 @@ module.exports = {
     async remove(user, guild) {
         const server = './data/' + guild.id;
 
-        var game = require('../' + server + '/game.json');
+        var game = JSON.parse(fs.readFileSync(server + '/game.json'));
         var players = game["players"]
 
         const id = user.id;
@@ -69,7 +69,7 @@ module.exports = {
 
         const server = './data/' + guild.id;
 
-        var game = require('../' + server + '/game.json');
+        var game = JSON.parse(fs.readFileSync(server + '/game.json'));
         var players = game["players"]
 
         if (players.includes(id)) {
@@ -121,7 +121,7 @@ module.exports = {
     async updateNicknamesFrom(guild, position, game=null) {
         if (game === null) {
             const server = './data/' + guild.id;
-            game = require('../' + server + '/game.json');
+            game = JSON.parse(fs.readFileSync(server + '/game.json'));
         }
         const players = game["players"];
         let promises = [];
@@ -138,10 +138,10 @@ module.exports = {
     async updateNickname(id, guild, game=null) {
         if (game === null) {
             const server = './data/' + guild.id;
-            game = require('../' + server + '/game.json');
+            game = JSON.parse(fs.readFileSync(server + '/game.json'));
         }
         try {
-            const playerData = require('../data/' + guild.id + '/' + id + '.json');
+            const playerData = JSON.parse(fs.readFileSync('./data/' + guild.id + '/' + id + '.json'));
 
             const number = (game.players.indexOf(id) + 1).toString().padStart(2, '0');
             let nickname = `${number}. `;

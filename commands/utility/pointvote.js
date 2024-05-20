@@ -27,7 +27,7 @@ module.exports = {
 
 			const server = './data/' + interaction.guildId;
 
-			const game = require('../../' + server + '/game.json');
+			const game = JSON.parse(fs.readFileSync(server + '/game.json'));
 			const players = game["players"]
 
 			var nominees = new Array();
@@ -57,7 +57,7 @@ module.exports = {
 			var nomdata = new Array;
 
 			for (const player in players) {
-				const p = require('../../' + server + '/' + players[player] + '.json');
+				const p = JSON.parse(fs.readFileSync(server + '/' + players[player] + '.json'));
 
 				const voteinfo = {
 					name: p.name,
