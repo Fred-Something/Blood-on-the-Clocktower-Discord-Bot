@@ -38,7 +38,11 @@ module.exports = {
 				voudon: interaction.options.getUser('voudon'),
 			});
 		} catch (e) {
-			await interaction.reply(`${e}`);
+			try {
+				await interaction.reply(`${e}`);
+			} catch {
+				console.error(`Error during voting: ${e}`);
+			}
 		}
 
 	}
