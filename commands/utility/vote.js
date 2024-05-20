@@ -11,6 +11,10 @@ module.exports = {
 				option.setName('nominee')
 					.setDescription('Player who was nominated, aka player who will vote last')
 					.setRequired(true))
+			.addIntegerOption(option =>
+				option.setName('countdown')
+				.setDescription('Seconds before voting will start. Leave blank to start voting manually')
+					.setRequired(false))
 			.addBooleanOption(option =>
 				option.setName('exile')
 				.setDescription('Whether this is a vote to exile a traveler, so dead players are counted too')
@@ -37,6 +41,7 @@ module.exports = {
 				return;
 			}
 
+			const initialCountdown = interaction.options.getInteger('countdown');
 			const optionAtheist = interaction.options.getBoolean('atheist');
 			const optionExile = interaction.options.getBoolean('exile');
 			const voudon = optionExile ? null : interaction.options.getUser('voudon');
@@ -72,16 +77,14 @@ module.exports = {
 				voteids.splice(voters.length, 0, players[cur]);
 			}
 
-			// console.log(voters);
-			// console.log(voteids);
-
 			const required = Math.ceil(aliveCount / 2);
 			const nomineeName = optionAtheist ? interaction.user.globalName : nominee.globalName;
-			let text = `## VOTING IS NOW OPEN\n**${required}** votes needed to ${optionExile ? "exile" : "execute"} **${nomineeName}**\n`;
+			let header = initialCountdown === null ? `## VOTING BEGINS SOON` : `## VOTING BEGINS IN ${initialCountdown}`;
+			let text = `\n**${required}** votes needed to ${optionExile ? "exile" : "execute"} **${nomineeName}**\n`;
 			if (voudon) text += `Only dead players and the Voudon can vote.\n`;
 			text += '\n';
 
-			text += voters[0]['emoji'] + ' **' + voters[0]['name'] + '**\'s vote will be recorded in 8 seconds\n'
+			let startingText = `Voting will start with ${voters[0].emoji} **${voters[0].name}**'s vote.\n`;
 			
 			const vote = new ButtonBuilder()
 				.setCustomId('Vote')
@@ -92,53 +95,91 @@ module.exports = {
 				.setCustomId('Unvote')
 				.setLabel('Lower Hand')
 				.setStyle(ButtonStyle.Primary);
-		
-			const row = new ActionRowBuilder()
-				.addComponents(vote, unvote);
+			
+			const initialRow = new ActionRowBuilder().addComponents(vote, unvote);
+			if (initialCountdown === null) {
+				const startVote = new ButtonBuilder()
+					.setCustomId('StartVote')
+					.setLabel('Start Vote')
+					.setStyle(ButtonStyle.Secondary);
+				initialRow.addComponents(startVote);
+			}
 
 			var votes = new Array(voters.length).fill(false);
 			var count = 0;
 		
+			let currentVotescreen = votescreen(count, voters, votes);
 			const message = await interaction.reply({
-				content: text + votescreen(count, voters, votes),
-				components: [row],
+				content: header + text + startingText + currentVotescreen,
+				components: [ initialRow ],
 			});
 
-			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 50_000 });
+
+			let voteCountdownLeft = initialCountdown;
+			const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 1000 * 20 * 60 });
 			collector.on('collect', i => {
-				if (voteids.includes(i.user.id)) {
-					if (voteids.indexOf(i.user.id) >= count) {
-						votes[voteids.indexOf(i.user.id)] = (i.customId === 'Vote');
-						i.deferUpdate();
+				if (i.customId === 'StartVote') {
+					if (i.user.id !== interaction.user.id) {
+						i.reply({ content: 'Only the storyteller can start the vote!', ephemeral: true });
 						return;
 					}
-					else {
-						i.reply({ content: `Your vote has been recorded, and cannot be changed.`, ephemeral: true });
-						return;
+					voteCountdownLeft = 3;
+					i.deferUpdate();
+				} else if (i.customId === 'Vote' || i.customId === 'Unvote') {
+					if (voteids.includes(i.user.id)) {
+						if (voteids.indexOf(i.user.id) >= count) {
+							votes[voteids.indexOf(i.user.id)] = (i.customId === 'Vote');
+							i.deferUpdate();
+						} else {
+							i.reply({ content: `Your vote has been recorded, and cannot be changed.`, ephemeral: true });
+						}
+					} else {
+						i.reply({ content: `You are not able to vote!`, ephemeral: true });
 					}
-				} else {
-					i.reply({ content: `You are not able to vote!`, ephemeral: true });
-					return;
 				}
-				i.reply({ content: `Unkown error`, ephemeral: true })
 			});
 
-			for (let i = 0; i < 7; i++) {
+
+			while (voteCountdownLeft === null) {
+				let newVotescreen = votescreen(count, voters, votes);
+				if (newVotescreen !== currentVotescreen) {
+					message.edit(header + text + startingText + newVotescreen);
+					currentVotescreen = newVotescreen;
+				}
 				await sleep(1050);
-				interaction.editReply(text + votescreen(count, voters, votes));
 			}
+
+			let updateComponents = initialCountdown === null;
+			while (voteCountdownLeft > 0) {
+				header = `## VOTING BEGINS IN ${voteCountdownLeft}`;
+
+				const reply = { content: header + text + startingText + votescreen(count, voters, votes) };
+				if (updateComponents) {
+					reply.components = [ new ActionRowBuilder().addComponents(vote, unvote) ];
+					updateComponents = false;
+				}
+				message.edit(reply);
+
+				await sleep(1050);
+				voteCountdownLeft -= 1;
+			}
+
+			header = '## VOTING HAS BEGUN';
+			message.edit({
+				content: header + text + startingText + votescreen(count, voters, votes),
+				components: [ new ActionRowBuilder().addComponents(vote, unvote) ],
+			});
 
 			let deadVoters = [];
 			for (const voter in voters) {
 				await sleep(1050);
 				text += voters[count]['emoji'] + ' **' + voters[count]['name'] + '** has '
 					+ (votes[count] ? '**VOTED\n**' : '**ABSTAINED\n**')
-				// text += (count >= votes.length - 1 ? '\n' : ' (' + voters[count + 1]['emoji'] + ' **' + voters[count + 1]['name'] + '** is next)\n');
 				if (votes[count] && !voters[count].alive) {
 					deadVoters.push(voters[count]);
 				}
 				count++;
-				await interaction.editReply(text + votescreen(count, voters, votes));
+				await message.edit(header + text + votescreen(count, voters, votes));
 			}
 
 			let deadVotersText = "";
@@ -148,9 +189,10 @@ module.exports = {
 				deadVotersText += '**' + deadVoterNames.join('**, ') + '**';
 			}
 
-			const num = votes.filter(Boolean).length
-			await interaction.editReply({
-				content : text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '' : 's') + ', which is ' + (num < required ? '**not** enough' : '**enough**') + '.' + deadVotersText,
+			const num = votes.filter(Boolean).length;
+			header = '## VOTING CONCLUDED';
+			await message.edit({
+				content : header + text + votescreen(count, voters, votes) + '\n\nVote concluded with **' + num + '** vote' + (num == 1 ? '' : 's') + ', which is ' + (num < required ? '**not** enough' : '**enough**') + '.' + deadVotersText,
 				components: []
 			});
 
@@ -166,6 +208,8 @@ module.exports = {
 					await playersModule.updateNickname(voter.id, interaction.guild, game);
 				}
 			}
+
+			collector.stop();
 		}
 }
 
