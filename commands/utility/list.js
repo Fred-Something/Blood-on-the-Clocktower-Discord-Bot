@@ -9,14 +9,14 @@ module.exports = {
 
 			const server = './data/' + interaction.guildId;
 
-			var game = require('../../' + server + '/game.json');
+			var game = JSON.parse(fs.readFileSync(server + '/game.json'));
 			var players = game["players"]
 
 			let out = ""
 			
 			let i = 1;
 			for (const player in players) {
-				const data = require('../../' + server + '/' + players[player] + '.json');
+				const data = JSON.parse(fs.readFileSync(server + '/' + players[player] + '.json'));
 				out += `${i}.`;
 				out += ' ' + data.emoji;
 				if (data.canvote) {

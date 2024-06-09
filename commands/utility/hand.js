@@ -11,7 +11,7 @@ module.exports = {
 			const id = interaction.user.id;
 			const server = './data/' + interaction.guildId;
 
-			var game = require('../../' + server + '/game.json');
+			var game = JSON.parse(fs.readFileSync(server + '/game.json'));
 			var players = game["players"]
 
 			if (!players.includes(id)) {
@@ -19,7 +19,7 @@ module.exports = {
 				return;
 			}
 
-			let player = require('../../' + server + '/' + id + '.json');
+			let player = JSON.parse(fs.readFileSync(server + '/' + id + '.json'));
             player.handRaised = !player.handRaised;
 
 			fs.writeFileSync(server + '/' + id + '.json', JSON.stringify(player), {flag: 'w+'}, err => {
